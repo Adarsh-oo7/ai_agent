@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Home</title>
+    <!-- Bootstrap CSS -->
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+</head>
+<body>
+    <div class="container">
+        <h1>Welcome!</h1>
+        <p>This is the home page.</p>
+        <a href="{% url 'scrape_form' %}" class="btn btn-primary">Go to Scrape Form</a>
+        <a href="{% url 'upload_excel' %}" class="btn btn-secondary">Upload Excel</a>
+        <a href="{% url 'send_email' %}" class="btn btn-info">Send Email</a>
+        {% comment %} <a href="{% url 'google_scraper:scrape_form' %}" class="btn btn-success">Scrape Google</a> {% endcomment %}
+    </div>
+
+    <!-- Bootstrap JS and dependencies -->
+    <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.5.3/dist/umd/popper.min.js"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+</body>
+</html>
