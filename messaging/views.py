@@ -132,13 +132,22 @@ def send_email(request):
 
 
 
+import time
+import random
+import pandas as pd
+from django.shortcuts import render, redirect
+from django.contrib import messages
+from django.core.mail import EmailMultiAlternatives
+from .models import Message
+from .forms import UploadFileForm
+
 def upload_excel(request):
     if request.method == "POST":
         form = UploadFileForm(request.POST, request.FILES)
         if form.is_valid():
             file = request.FILES["file"]
             try:
-                print("working here 1")
+                print("Processing file...")
                 df = pd.read_excel(file)
                 df.rename(columns={"company_name": "company_name"}, inplace=True)  # Fix column name
                 
@@ -152,9 +161,11 @@ def upload_excel(request):
                             company_name=company_name,
                             status="Pending",
                         )
-                        
+                        print("woriking")
+
+                        # Email content
                         email_html_template = f"""
-<!DOCTYPE html>
+                       <!DOCTYPE html>
 <html>
 <head>
     <style>
@@ -218,10 +229,24 @@ def upload_excel(request):
         .social-links a:hover {{
             text-decoration: underline;
         }}
-        .logo {{
-            width: 120px;
-            margin-bottom: 20px;
-        }}
+        .cta-button {{
+    background-color: #28a745;
+    color: white;
+    padding: 12px 24px;
+    text-decoration: none;
+    font-size: 16px;
+    font-weight: bold;
+    border-radius: 8px;
+    display: inline-block;
+    transition: background-color 0.3s ease, transform 0.2s ease;
+}}
+
+.cta-button:hover {{
+    background-color: #218838;
+    transform: scale(1.05);
+}}
+
+    
         .service-list {{
             text-align: left;
             margin: 20px auto;
@@ -266,24 +291,32 @@ def upload_excel(request):
 <body>
     <div class="email-container">
         <!-- Logo -->
-        <img src="https://digitalproduct.adarshbs.com/logo.png" alt="Digital Product Logo" class="logo">
 
         <!-- Heading -->
         <h2 class="animated-text">🚀 Let's Grow Your Business, <span class="highlight">{company_name}</span>!</h2>
 
         <!-- Introduction -->
-        <p>Hi <span class="highlight">{company_name}</span> Team,</p>
-        <p>I'm <b>Adarsh B S</b>, the founder of <b>Digital Product</b>. We specialize in:</p>
-        <ul class="service-list">
-            <li>🌐 <b>Stunning Website Design</b></li>
-            <li>🔍 <b>SEO Optimization</b></li>
-            <li>🤖 <b>Social Media Automation</b></li>
-        </ul>
-        <p>Our goal is to help businesses like yours attract more customers and boost sales.</p>
+       <p>Hi <span class="highlight">{company_name}</span> Team,</p>  
+<p>I'm <b>Adarsh B S</b>, founder of <b>Digital Product</b>. We help businesses grow by offering:</p>  
+<ul class="service-list">  
+    <li>🌐 <b>Professional & Engaging Website Design</b></li>  
+    <li>🚀 <b>SEO Strategies to Boost Online Visibility</b></li>  
+    <li>🤖 <b>AI-Powered Social Media & Business Automation</b></li>  
+</ul>  
+<p>Let's work together to enhance your online presence and maximize your business growth!</p> 
+<p>Want to know more details? <b>Just reply with "Interested"</b></p>
+<a href="https://digitalproduct.adarshbs.com/" 
+   class="cta-button" 
+   target="_blank" 
+   rel="noopener noreferrer">
+    🌐 Visit Our Website
+</a>
+
 
         <!-- Call to Action -->
         <p>Would you be open to a quick chat to explore how we can help you scale?</p>
-        <a href="https://www.adarshbs.com/#contact" class="cta-button">Schedule a Free Consultation</a>
+             <a href="https://wa.me/918330883766?text=I%20Need%20to%20Book%20a%20Free%20Consultation" class="cta-button">Schedule a Free Consultation</a>   
+
 
         <!-- Inquiry Section -->
         <div class="inquiry-section">
@@ -309,12 +342,12 @@ def upload_excel(request):
     </div>
 </body>
 </html>
-"""
-                        
+                        """
+
                         try:
                             email = EmailMultiAlternatives(
                                 subject=f"Boost Your Business with Digital Product!",
-                                body=f"Hello {company_name}, check out our services at www.adarshbs.com",
+                                body=f"Hello {company_name}, check out our services at https://digitalproduct.adarshbs.com/",
                                 from_email="digitalproductkerala@gmail.com",
                                 to=[recipient_email],
                             )
@@ -322,22 +355,28 @@ def upload_excel(request):
                             email.send()
                             
                             message.status = "Sent"
+                            print(f"Email sent to {recipient_email}")
+
                         except Exception as e:
                             message.status = "Failed"
-                            print(f"Error sending email: {e}")
+                            print(f"Error sending email to {recipient_email}: {e}")
                         
                         message.save()
-                
+
+                        # **Add a delay to prevent spam blocking**
+                        time_interval = random.uniform(5, 15)  # Random delay between 5 to 15 seconds
+                        print(f"Waiting for {time_interval:.2f} seconds before sending the next email...")
+                        time.sleep(time_interval)  # Introduce a delay
+
                 messages.success(request, "Emails sent successfully!")
             except Exception as e:
                 messages.error(request, f"Error processing file: {e}")
-            
+
             return redirect("upload_excel")
     else:
         form = UploadFileForm()
 
     return render(request, "upload_excel.html", {"form": form})
-
 
 def home(request):
     return render(request, "home.html")
